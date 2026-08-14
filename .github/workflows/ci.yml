@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lua: ["5.1", "5.4", "luajit"]
+        lua: ["5.1", "5.4", "luajit-openresty"]
     steps:
       - uses: actions/checkout@v4
 
