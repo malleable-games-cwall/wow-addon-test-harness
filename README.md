@@ -176,7 +176,8 @@ scripts/                 binary and bundle build scripts
 
 ## CI
 
-`.github/workflows/ci.yml` lints, runs the unit tests on Lua 5.1/5.4/LuaJIT, then builds
+`.github/workflows/ci.yml` lints, runs the unit tests on Lua 5.1 and 5.4 (plus a
+dependency-free CLI run under LuaJIT), then builds
 and verifies the terminal application: native `wowtest` binaries for Linux and macOS
 (x86_64 and arm64) plus a portable single file `wowtest.lua`, all uploaded as artifacts.
 Tagging `v*` runs `.github/workflows/release.yml`, which attaches the same artifacts to a

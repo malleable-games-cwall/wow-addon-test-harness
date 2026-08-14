@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lua: ["5.1", "5.4", "luajit-openresty"]
+        lua: ["5.1", "5.4"]
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +39,22 @@ jobs:
         run: |
           lua bin/wowtest.lua --no-color --verbose spec/fixtures/SampleAddon
           lua bin/wowtest.lua --no-color spec/fixtures/BrokenAddon && exit 1 || test $? -eq 1
+
+  # LuaJIT cannot load the luarocks manifest (65536 constant limit), so it gets a
+  # dependency free run of the CLI instead of the busted suite.
+  luajit:
+    name: cli (luajit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LuaJIT
+        run: sudo apt-get update && sudo apt-get install -y luajit
+
+      - name: Run the harness against the fixture addons
+        run: |
+          luajit bin/wowtest.lua --no-color --verbose spec/fixtures/SampleAddon
+          luajit bin/wowtest.lua --no-color spec/fixtures/BrokenAddon && exit 1 || test $? -eq 1
 
   binary:
     name: binary (${{ matrix.name }})
