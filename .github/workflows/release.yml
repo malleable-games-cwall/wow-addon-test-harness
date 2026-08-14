@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to publish the binaries under
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  binary:
+    name: binary (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-x86_64
+          - os: macos-latest
+            name: macos-arm64
+          - os: macos-13
+            name: macos-x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+
+      - uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install luastatic
+        run: luarocks install luastatic
+
+      - name: Build wowtest
+        env:
+          LUA_A: ${{ github.workspace }}/.lua/lib/liblua.a
+          LUA_INCLUDE_DIR: ${{ github.workspace }}/.lua/include
+        run: scripts/build-binary.sh
+
+      - name: Smoke test the binary
+        run: ./dist/wowtest --no-color spec/fixtures/SampleAddon
+
+      - name: Package
+        run: |
+          mv dist/wowtest wowtest
+          tar -czf wowtest-${{ matrix.name }}.tar.gz wowtest README.md LICENSE
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wowtest-${{ matrix.name }}
+          path: wowtest-${{ matrix.name }}.tar.gz
+          if-no-files-found: error
+
+  bundle:
+    name: portable bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+
+      - name: Build the single file bundle
+        run: |
+          mkdir -p dist
+          lua scripts/build-bundle.lua
+          lua dist/wowtest.lua --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wowtest-portable-lua
+          path: dist/wowtest.lua
+          if-no-files-found: error
+
+  publish:
+    name: publish release
+    needs: [binary, bundle]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
+          files: |
+            artifacts/*.tar.gz
+            artifacts/wowtest.lua
+          generate_release_notes: true

@@ -1,0 +1,6 @@
+## Interface: 110002
+## Title: UnmockedAddon
+## Version: 0.1.0
+## Notes: Reads client APIs the harness does not mock.
+
+Core.lua

@@ -39,3 +39,9 @@ luac.out
 *.x86_64
 *.hex
 
+# Harness build output
+/build/
+/dist/
+/.lua/
+luacov.stats.out
+luacov.report.out

@@ -1,0 +1,5 @@
+## Interface: 110002
+## Title: Xml Addon
+## Version: 0.1.0
+
+Bindings.xml
