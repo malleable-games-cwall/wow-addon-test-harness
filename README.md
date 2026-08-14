@@ -34,8 +34,8 @@ Warnings (1)
 PASS  no errors raised during the simulated session
 ```
 
-Exit codes: `0` clean run, `1` the addon raised at least one error, `2` the harness could
-not start (bad arguments, missing path).
+Exit codes: `0` clean run, `1` the addon raised at least one error or could not be loaded
+(missing `.toc`, unreadable scenario file), `2` the harness could not start (bad arguments).
 
 ## What the default run does
 
@@ -143,9 +143,13 @@ suite instead of using the CLI.
 | SavedVariables | Declared globals persisted to and loaded from a `SavedVariables.lua` |
 | Lua extensions | `strsplit`, `strjoin`, `strtrim`, `wipe`, `tContains`, `hooksecurefunc`, `Mixin`, ... |
 
-Anything else resolves to a stub that records itself instead of erroring, and the report
-lists the unmocked APIs an addon touched. Run with `--strict` to turn those into errors.
-XML frame definitions are reported but not built.
+Unknown *widget methods* (`frame:SetResizeBounds(...)`) resolve to a stub that records
+itself instead of erroring; the report lists them under "Unmocked APIs used" and
+`--strict` turns them into errors. Unknown *globals* behave like they do in Lua: reading
+one yields `nil`, so calling an unmocked client API errors exactly the way a typo would.
+The report lists every global the addon read but the harness does not provide, so you can
+tell a missing mock from your own typo — open an issue (or a PR adding the mock) for the
+former. XML frame definitions are reported but not built.
 
 ## Development
 

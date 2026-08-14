@@ -85,6 +85,18 @@ describe("runner", function()
     assert.are.equal("scenario", result.errors[#result.errors].label)
   end)
 
+  it("reports globals the harness does not provide", function()
+    local result = runner.run({ addons = { "spec/fixtures/UnmockedAddon" } })
+    local names = {}
+    for _, entry in ipairs(result.unknownGlobals) do
+      names[entry.name] = entry.count
+    end
+    assert.is_true(result.passed)
+    assert.are.equal(1, names.GetRealZoneText)
+    -- globals the addon assigns itself are not missing mocks
+    assert.is_nil(names.UnmockedAddonZone)
+  end)
+
   it("simulates the documented login sequence", function()
     local result = runner.run({ addons = { "spec/fixtures/SampleAddon" } })
     local fired = {}

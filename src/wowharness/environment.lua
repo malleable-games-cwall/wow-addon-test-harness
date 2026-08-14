@@ -65,8 +65,8 @@ function environment.create(options)
   -- (feature detection), so record it as information rather than failing.
   setmetatable(env, {
     __index = function(_, key)
-      if type(key) == "string" and not context.unknownGlobals[key] then
-        context.unknownGlobals[key] = true
+      if type(key) == "string" then
+        context:noteUnknownGlobal(key)
       end
       return nil
     end,

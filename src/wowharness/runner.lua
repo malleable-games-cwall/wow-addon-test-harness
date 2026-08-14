@@ -179,6 +179,15 @@ function runner.summarize(session, options)
     table.insert(missingApi, { name = name, count = context.missingApi[name] })
   end
 
+  -- A global read before the addon assigns it (saved variables, lazily built
+  -- tables) is normal, so only report names that stayed undefined all run.
+  local unknownGlobals = {}
+  for _, name in ipairs(context.unknownGlobalOrder) do
+    if rawget(context.env, name) == nil then
+      table.insert(unknownGlobals, { name = name, count = context.unknownGlobals[name] })
+    end
+  end
+
   local templates = {}
   for _, name in ipairs(context.templateOrder) do
     table.insert(templates, { name = name, count = context.templates[name] })
@@ -192,6 +201,7 @@ function runner.summarize(session, options)
     output = context.output,
     steps = session.steps,
     missingApi = missingApi,
+    unknownGlobals = unknownGlobals,
     templates = templates,
     frames = #context.frames,
     slashCommands = session:slashCommands(),

@@ -20,9 +20,10 @@ describe("sandbox environment", function()
     assert.is_nil(rawget(context.env, "dofile"))
   end)
 
-  it("records reads of undefined globals", function()
+  it("counts reads of undefined globals", function()
     local _ = context.env.SomeNonExistentGlobal
-    assert.is_true(context.unknownGlobals.SomeNonExistentGlobal)
+    _ = context.env.SomeNonExistentGlobal
+    assert.are.equal(2, context.unknownGlobals.SomeNonExistentGlobal)
   end)
 
   it("captures errors raised inside protected calls", function()

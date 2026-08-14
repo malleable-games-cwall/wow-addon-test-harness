@@ -35,6 +35,13 @@ describe("report", function()
       assert.is_falsy(string.find(text, "\27[", 1, true))
     end)
 
+    it("lists globals the harness does not provide", function()
+      local result = runner.run({ addons = { "spec/fixtures/UnmockedAddon" } })
+      local text = report.text(result, { color = false })
+      assert.is_truthy(string.find(text, "Globals the harness does not provide (1)", 1, true))
+      assert.is_truthy(string.find(text, "GetRealZoneText", 1, true))
+    end)
+
     it("lists errors for a failing run", function()
       local text = report.text(failing, { color = false })
       assert.is_truthy(string.find(text, "FAIL", 1, true))

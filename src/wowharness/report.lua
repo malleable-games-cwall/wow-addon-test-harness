@@ -94,7 +94,9 @@ function report.text(result, options)
       addon.version and ("v" .. addon.version .. " ") or "",
       addon.interface and paint(color, "dim", "(interface " .. addon.interface .. ")") or "",
       #addon.files,
-      #addon.declaredFiles
+      -- XML includes add files the .toc never declared, so the denominator is
+      -- whichever is larger to keep "loaded/expected" meaningful.
+      math.max(#addon.files, #addon.declaredFiles)
     ))
   end
   if #result.addons == 0 then
@@ -131,6 +133,21 @@ function report.text(result, options)
     add(paint(color, "yellow", string.format("Unmocked APIs used (%d)", #result.missingApi)))
     for _, entry in ipairs(result.missingApi) do
       add(string.format("  - %s (%d call%s)", entry.name, entry.count, entry.count == 1 and "" or "s"))
+    end
+    add()
+  end
+
+  local unknownGlobals = result.unknownGlobals or {}
+  if #unknownGlobals > 0 then
+    add(paint(color, "yellow", string.format("Globals the harness does not provide (%d)", #unknownGlobals)))
+    add("  reading these yields nil; calling one raises an error the report attributes to your addon")
+    local limit = options.verbose and #unknownGlobals or math.min(#unknownGlobals, 12)
+    for index = 1, limit do
+      add(string.format("  - %s (%d read%s)", unknownGlobals[index].name,
+        unknownGlobals[index].count, unknownGlobals[index].count == 1 and "" or "s"))
+    end
+    if limit < #unknownGlobals then
+      add(string.format("  ... %d more (use --verbose to list them all)", #unknownGlobals - limit))
     end
     add()
   end

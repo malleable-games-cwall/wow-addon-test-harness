@@ -19,6 +19,7 @@ function Context.new(options)
     templates = {},
     templateOrder = {},
     unknownGlobals = {},
+    unknownGlobalOrder = {},
     frames = {},
     addons = {},
     savedVariables = {},
@@ -84,15 +85,26 @@ function Context:addOutput(channel, message, color)
   table.insert(self.output, { channel = channel, message = message, color = color })
 end
 
-function Context:noteMissingApi(name)
+--- Record a call to an API the harness does not implement.
+-- @param level number stack level blamed when strict mode raises, counted from
+--   this function; the default of 3 blames whoever called the stub, i.e. the addon
+function Context:noteMissingApi(name, level)
   if not self.missingApi[name] then
     self.missingApi[name] = 0
     table.insert(self.missingApiOrder, name)
   end
   self.missingApi[name] = self.missingApi[name] + 1
   if self.strict then
-    error(string.format("unmocked API used: %s", name), 2)
+    error(string.format("unmocked API used: %s", name), level or 3)
   end
+end
+
+function Context:noteUnknownGlobal(name)
+  if not self.unknownGlobals[name] then
+    self.unknownGlobals[name] = 0
+    table.insert(self.unknownGlobalOrder, name)
+  end
+  self.unknownGlobals[name] = self.unknownGlobals[name] + 1
 end
 
 function Context:noteTemplate(name)
