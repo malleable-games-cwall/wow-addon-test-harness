@@ -1,0 +1,7 @@
+## Interface: 110002
+## Title: Broken Addon
+## Notes: Intentionally faulty addon used by the harness test suite.
+## Version: 0.0.1
+
+Runtime.lua
+Missing.lua

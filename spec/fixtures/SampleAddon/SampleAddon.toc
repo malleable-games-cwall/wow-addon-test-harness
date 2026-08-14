@@ -1,0 +1,10 @@
+## Interface: 110002
+## Title: Sample Addon
+## Notes: Healthy addon used by the harness test suite.
+## Author: wow-addon-test-harness
+## Version: 1.2.3
+## SavedVariables: SampleAddonDB
+## OptionalDeps: MissingLibrary
+
+Core.lua
+UI.lua

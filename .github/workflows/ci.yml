@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test (lua ${{ matrix.lua }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        lua: ["5.1", "5.4", "luajit"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: ${{ matrix.lua }}
+
+      - uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install dependencies
+        run: |
+          luarocks install --deps-only wow-addon-test-harness-scm-1.rockspec
+          luarocks install busted
+          luarocks install luacheck
+
+      - name: Lint
+        run: luacheck .
+
+      - name: Unit tests
+        run: busted --output=TAP
+
+      - name: Self check against the fixture addons
+        run: |
+          lua bin/wowtest.lua --no-color --verbose spec/fixtures/SampleAddon
+          lua bin/wowtest.lua --no-color spec/fixtures/BrokenAddon && exit 1 || test $? -eq 1
+
+  binary:
+    name: binary (${{ matrix.name }})
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: linux-x86_64
+          - os: macos-latest
+            name: macos-arm64
+          - os: macos-13
+            name: macos-x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+
+      - uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install luastatic
+        run: luarocks install luastatic
+
+      - name: Build wowtest
+        env:
+          LUA_A: ${{ github.workspace }}/.lua/lib/liblua.a
+          LUA_INCLUDE_DIR: ${{ github.workspace }}/.lua/include
+        run: scripts/build-binary.sh
+
+      - name: Verify the binary runs standalone
+        run: |
+          ./dist/wowtest --version
+          ./dist/wowtest --no-color spec/fixtures/SampleAddon
+          ./dist/wowtest --no-color spec/fixtures/BrokenAddon && exit 1 || test $? -eq 1
+
+      - name: Rename for upload
+        run: mv dist/wowtest dist/wowtest-${{ matrix.name }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wowtest-${{ matrix.name }}
+          path: dist/wowtest-${{ matrix.name }}
+          if-no-files-found: error
+
+  bundle:
+    name: portable bundle
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.4"
+
+      - name: Build the single file bundle
+        run: |
+          mkdir -p dist
+          lua scripts/build-bundle.lua
+
+      - name: Verify the bundle runs with a bare interpreter
+        run: |
+          lua dist/wowtest.lua --version
+          lua dist/wowtest.lua --no-color spec/fixtures/SampleAddon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wowtest-portable-lua
+          path: dist/wowtest.lua
+          if-no-files-found: error
