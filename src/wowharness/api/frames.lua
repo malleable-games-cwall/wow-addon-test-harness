@@ -296,6 +296,14 @@ function Widget:EnableMouse(enabled)
   self.mouseEnabled = enabled and true or false
 end
 
+function Widget:EnableMouseWheel(enabled)
+  self.mouseWheelEnabled = enabled and true or false
+end
+
+function Widget:IsMouseWheelEnabled()
+  return self.mouseWheelEnabled
+end
+
 function Widget:IsMouseEnabled()
   return self.mouseEnabled
 end
@@ -360,6 +368,21 @@ function Widget:Raise() end
 function Widget:Lower() end
 function Widget:SetToplevel() end
 function Widget:SetPropagateKeyboardInput() end
+
+-- PlayerModel/DressUpModel. Nothing renders here, but an addon can still ask
+-- which unit a model was pointed at.
+function Widget:SetUnit(unit)
+  self.modelUnit = unit
+end
+
+function Widget:GetUnit()
+  return self.modelUnit
+end
+
+function Widget:SetPosition() end
+function Widget:SetFacing() end
+function Widget:SetCamDistanceScale() end
+function Widget:RefreshUnit() end
 
 function Widget:Click(button)
   self:RunScript("OnClick", button or "LeftButton", false)
@@ -426,6 +449,14 @@ end
 
 function Widget:GetTexture()
   return self.texture
+end
+
+function Widget:SetDesaturated(desaturated)
+  self.desaturated = desaturated and true or false
+end
+
+function Widget:IsDesaturated()
+  return self.desaturated
 end
 
 function Widget:SetColorTexture(r, g, b, a)

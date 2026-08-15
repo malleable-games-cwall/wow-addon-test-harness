@@ -11,6 +11,8 @@ local MODULES = {
   "wowharness.api.events",
   "wowharness.api.frames",
   "wowharness.api.game",
+  "wowharness.api.interaction",
+  "wowharness.api.inventory",
   "wowharness.api.savedvariables",
   "wowharness.api.timers",
   "wowharness.cli",

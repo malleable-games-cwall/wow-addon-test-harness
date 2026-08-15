@@ -125,9 +125,98 @@ function Session:gamePadButton(frame, button, down)
   return true
 end
 
+--- Move a gamepad stick, as the client would deliver it while it is held.
+function Session:gamePadStick(frame, stick, x, y)
+  if type(frame) == "string" then
+    frame = self.env[frame]
+  end
+  if type(frame) ~= "table" or not frame.RunScript then
+    self.context:addWarning(string.format("cannot send stick '%s' to an unknown frame", tostring(stick)))
+    return false
+  end
+  frame:RunScript("OnGamePadStick", stick or "Left", x or 0, y or 0)
+  self:log("stick", string.format("%s %.2f,%.2f", stick or "Left", x or 0, y or 0))
+  return true
+end
+
 --- The bindings the addon has written through SetBinding.
 function Session:bindings()
   return self.context.state.bindings
+end
+
+--- Start a gossip conversation and fire GOSSIP_SHOW.
+-- @param data table { text = "...", options = {...}, availableQuests = {...}, activeQuests = {...} }
+function Session:setGossip(data)
+  self.context.state.gossip = data
+  if data then self:fire("GOSSIP_SHOW") end
+  return data
+end
+
+--- Stage quest giver text. `event` names the quest event to fire, e.g.
+-- "QUEST_DETAIL", "QUEST_PROGRESS", "QUEST_COMPLETE" or "QUEST_GREETING".
+function Session:setQuest(data, event)
+  self.context.state.quest = data
+  if event then self:fire(event) end
+  return data
+end
+
+--- Open a merchant and fire MERCHANT_SHOW.
+function Session:setMerchant(data)
+  self.context.state.merchant = data
+  self.context.state.buyback = (data and data.buyback) or {}
+  if data then self:fire("MERCHANT_SHOW") end
+  return data
+end
+
+function Session:setMoney(amount)
+  self.context.state.money = amount or 0
+end
+
+--- Register item data, keyed by the link or name scenarios refer to it by.
+-- @param entries table { ["Bright Blade"] = { name = ..., equipLocation = "INVTYPE_WEAPON" } }
+function Session:setItems(entries)
+  for key, entry in pairs(entries or {}) do
+    entry.name = entry.name or key
+    entry.link = entry.link or key
+    self.context.state.items[key] = entry
+  end
+  return self.context.state.items
+end
+
+--- Put items on the paperdoll, keyed by inventory slot id.
+function Session:setEquipment(slots)
+  self.context.state.equipment = slots or {}
+  self:fire("PLAYER_EQUIPMENT_CHANGED")
+  return self.context.state.equipment
+end
+
+--- Fill the bags: { [0] = { "Bright Blade", ... }, [1] = { ... } }.
+function Session:setBags(bags)
+  self.context.state.bags = bags or {}
+  return self.context.state.bags
+end
+
+--- The item key worn in `slot`, or the whole paperdoll when slot is nil.
+function Session:equipped(slot)
+  if slot then
+    return self.context.state.equipment[slot]
+  end
+  return self.context.state.equipment
+end
+
+--- Give the player a specialisation, as retail characters have past level 10.
+function Session:setSpecialization(spec)
+  self.context.state.specialization = spec
+  return spec
+end
+
+--- Everything the addon asked the server to do while interacting with an NPC.
+function Session:interactions()
+  return self.context.state.interactions
+end
+
+function Session:purchases()
+  return self.context.state.purchases
 end
 
 --- Click a named button/frame created by the addon.

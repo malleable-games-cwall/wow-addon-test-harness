@@ -4,6 +4,8 @@ local frames = require("wowharness.api.frames")
 local timers = require("wowharness.api.timers")
 local chat = require("wowharness.api.chat")
 local gameApi = require("wowharness.api.game")
+local interaction = require("wowharness.api.interaction")
+local inventory = require("wowharness.api.inventory")
 
 local environment = {}
 
@@ -60,6 +62,8 @@ function environment.create(options)
   frames.install(context)
   chat.install(context)
   gameApi.install(context)
+  interaction.install(context)
+  inventory.install(context)
 
   -- Reading an undefined global is legal in Lua and common in addon code
   -- (feature detection), so record it as information rather than failing.
