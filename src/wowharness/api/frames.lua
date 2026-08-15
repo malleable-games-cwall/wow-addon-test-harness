@@ -296,6 +296,14 @@ function Widget:EnableMouse(enabled)
   self.mouseEnabled = enabled and true or false
 end
 
+function Widget:EnableMouseWheel(enabled)
+  self.mouseWheelEnabled = enabled and true or false
+end
+
+function Widget:IsMouseWheelEnabled()
+  return self.mouseWheelEnabled
+end
+
 function Widget:IsMouseEnabled()
   return self.mouseEnabled
 end
@@ -426,6 +434,14 @@ end
 
 function Widget:GetTexture()
   return self.texture
+end
+
+function Widget:SetDesaturated(desaturated)
+  self.desaturated = desaturated and true or false
+end
+
+function Widget:IsDesaturated()
+  return self.desaturated
 end
 
 function Widget:SetColorTexture(r, g, b, a)

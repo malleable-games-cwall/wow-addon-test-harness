@@ -37,6 +37,13 @@ function Context.new(options)
       bindings = {},
       bindingSet = 1,
       gamePad = nil,
+      gossip = nil,
+      quest = nil,
+      merchant = nil,
+      buyback = {},
+      purchases = {},
+      interactions = {},
+      money = 0,
     },
   }, Context)
   context.events = Events.new(context)
