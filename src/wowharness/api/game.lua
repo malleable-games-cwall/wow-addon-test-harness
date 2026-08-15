@@ -355,6 +355,73 @@ function game.install(context)
   env.SetCVar = env.C_CVar.SetCVar
   env.GetCVarBool = env.C_CVar.GetCVarBool
 
+  -- Key bindings. Everything is kept in context.state.bindings so a scenario
+  -- can assert what the addon asked the client to bind.
+  env.GetCurrentBindingSet = function()
+    return context.state.bindingSet
+  end
+  env.LoadBindings = function(set)
+    context.state.bindingSet = set or context.state.bindingSet
+    return true
+  end
+  env.SaveBindings = function(set)
+    context.state.bindingSet = set or context.state.bindingSet
+    return true
+  end
+  env.SetBinding = function(key, command)
+    if type(key) ~= "string" then
+      return false
+    end
+    context.state.bindings[key] = command
+    return true
+  end
+  env.SetBindingClick = function(key, buttonName, mouseButton)
+    return env.SetBinding(key, "CLICK " .. tostring(buttonName) .. ":" ..
+      tostring(mouseButton or "LeftButton"))
+  end
+  env.GetBindingAction = function(key)
+    return context.state.bindings[key] or ""
+  end
+  env.GetBindingKey = function(command)
+    local keys = {}
+    for key, bound in pairs(context.state.bindings) do
+      if bound == command then
+        table.insert(keys, key)
+      end
+    end
+    table.sort(keys)
+    return (table.unpack or unpack)(keys) -- luacheck: ignore 143
+  end
+  env.GetNumBindings = function()
+    local count = 0
+    for _ in pairs(context.state.bindings) do
+      count = count + 1
+    end
+    return count
+  end
+
+  -- Gamepad. No device is connected unless a scenario adds one via
+  -- session:setGamePad{...}.
+  env.C_GamePad = {
+    IsEnabled = function()
+      return context.state.gamePad ~= nil
+    end,
+    GetAllDeviceIDs = function()
+      return context.state.gamePad and { 1 } or {}
+    end,
+    GetActiveDeviceID = function()
+      return context.state.gamePad and 1 or nil
+    end,
+    GetDeviceMappedState = function()
+      return context.state.gamePad
+    end,
+    GetPowerLevel = function()
+      return context.state.gamePad and context.state.gamePad.powerLevel or nil
+    end,
+    SetVibration = function() end,
+    ApplyConfigs = function() end,
+  }
+
   env.GetSpellInfo = function(spell)
     local entry = context.state.spells[spell]
     if not entry then

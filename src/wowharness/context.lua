@@ -34,6 +34,9 @@ function Context.new(options)
       cvars = {},
       spells = {},
       items = {},
+      bindings = {},
+      bindingSet = 1,
+      gamePad = nil,
     },
   }, Context)
   context.events = Events.new(context)
