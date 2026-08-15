@@ -369,6 +369,21 @@ function Widget:Lower() end
 function Widget:SetToplevel() end
 function Widget:SetPropagateKeyboardInput() end
 
+-- PlayerModel/DressUpModel. Nothing renders here, but an addon can still ask
+-- which unit a model was pointed at.
+function Widget:SetUnit(unit)
+  self.modelUnit = unit
+end
+
+function Widget:GetUnit()
+  return self.modelUnit
+end
+
+function Widget:SetPosition() end
+function Widget:SetFacing() end
+function Widget:SetCamDistanceScale() end
+function Widget:RefreshUnit() end
+
 function Widget:Click(button)
   self:RunScript("OnClick", button or "LeftButton", false)
 end

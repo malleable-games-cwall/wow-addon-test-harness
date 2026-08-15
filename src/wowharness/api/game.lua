@@ -430,14 +430,7 @@ function game.install(context)
     return entry.name, nil, entry.icon, entry.castTime or 0, entry.minRange or 0,
       entry.maxRange or 40, entry.id
   end
-  env.GetItemInfo = function(item)
-    local entry = context.state.items[item]
-    if not entry then
-      return nil
-    end
-    return entry.name, entry.link or ("|cffffffff|Hitem:" .. tostring(entry.id) .. "|h[" ..
-      tostring(entry.name) .. "]|h|r"), entry.quality or 1, entry.level or 1
-  end
+  -- GetItemInfo lives in api/inventory.lua, next to the bags that use it.
 
   env.securecall = function(func, ...)
     if type(func) == "string" then

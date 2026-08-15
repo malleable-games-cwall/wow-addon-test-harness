@@ -172,6 +172,44 @@ function Session:setMoney(amount)
   self.context.state.money = amount or 0
 end
 
+--- Register item data, keyed by the link or name scenarios refer to it by.
+-- @param entries table { ["Bright Blade"] = { name = ..., equipLocation = "INVTYPE_WEAPON" } }
+function Session:setItems(entries)
+  for key, entry in pairs(entries or {}) do
+    entry.name = entry.name or key
+    entry.link = entry.link or key
+    self.context.state.items[key] = entry
+  end
+  return self.context.state.items
+end
+
+--- Put items on the paperdoll, keyed by inventory slot id.
+function Session:setEquipment(slots)
+  self.context.state.equipment = slots or {}
+  self:fire("PLAYER_EQUIPMENT_CHANGED")
+  return self.context.state.equipment
+end
+
+--- Fill the bags: { [0] = { "Bright Blade", ... }, [1] = { ... } }.
+function Session:setBags(bags)
+  self.context.state.bags = bags or {}
+  return self.context.state.bags
+end
+
+--- The item key worn in `slot`, or the whole paperdoll when slot is nil.
+function Session:equipped(slot)
+  if slot then
+    return self.context.state.equipment[slot]
+  end
+  return self.context.state.equipment
+end
+
+--- Give the player a specialisation, as retail characters have past level 10.
+function Session:setSpecialization(spec)
+  self.context.state.specialization = spec
+  return spec
+end
+
 --- Everything the addon asked the server to do while interacting with an NPC.
 function Session:interactions()
   return self.context.state.interactions
