@@ -103,6 +103,33 @@ function Session:setCombat(inCombat)
   self:fire(inCombat and "PLAYER_REGEN_DISABLED" or "PLAYER_REGEN_ENABLED")
 end
 
+--- Connect (or with nil, disconnect) a simulated gamepad.
+-- @param device table|nil e.g. { name = "DualSense", labelStyle = "playstation" }
+function Session:setGamePad(device)
+  self.context.state.gamePad = device
+  self:fire("GAMEPAD_CONNECTED", 1)
+  return device
+end
+
+--- Press a gamepad button on a frame, as the client would deliver it.
+function Session:gamePadButton(frame, button, down)
+  if type(frame) == "string" then
+    frame = self.env[frame]
+  end
+  if type(frame) ~= "table" or not frame.RunScript then
+    self.context:addWarning(string.format("cannot send '%s' to an unknown frame", tostring(button)))
+    return false
+  end
+  frame:RunScript(down == false and "OnGamePadButtonUp" or "OnGamePadButtonDown", button)
+  self:log("gamepad", button)
+  return true
+end
+
+--- The bindings the addon has written through SetBinding.
+function Session:bindings()
+  return self.context.state.bindings
+end
+
 --- Click a named button/frame created by the addon.
 function Session:click(frameName, button)
   local frame = self.env[frameName]

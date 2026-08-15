@@ -304,6 +304,24 @@ function Widget:EnableKeyboard(enabled)
   self.keyboardEnabled = enabled and true or false
 end
 
+function Widget:EnableGamePadButton(enabled)
+  self.gamePadButtonEnabled = enabled and true or false
+end
+
+function Widget:IsGamePadButtonEnabled()
+  return self.gamePadButtonEnabled
+end
+
+function Widget:EnableGamePadStick(enabled)
+  self.gamePadStickEnabled = enabled and true or false
+end
+
+function Widget:IsGamePadStickEnabled()
+  return self.gamePadStickEnabled
+end
+
+function Widget:SetPropagateGamePadInput() end
+
 function Widget:SetMovable(movable)
   self.movable = movable and true or false
 end
@@ -609,6 +627,10 @@ function frames.install(context)
   uiParent.width, uiParent.height = 1024, 768
   env.UIParent = uiParent
   context:setGlobal("UIParent", uiParent)
+
+  -- Frames registered here are closed by Escape in the real client.
+  env.UISpecialFrames = {}
+  context:setGlobal("UISpecialFrames", env.UISpecialFrames)
 
   local worldFrame = newWidget(context, "Frame", "WorldFrame", nil, nil)
   env.WorldFrame = worldFrame
